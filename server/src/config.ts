@@ -1,4 +1,11 @@
-import 'dotenv/config'
+import dotenv from 'dotenv'
+import { resolve } from 'node:path'
+
+// Los scripts de workspace se ejecutan desde /server; la configuración del
+// proyecto vive en la raíz. El segundo intento también cubre ejecuciones desde
+// la raíz (por ejemplo, `node server/dist/index.js`).
+dotenv.config({ path: resolve(process.cwd(), '../.env') })
+dotenv.config()
 
 export const config = {
   port: Number(process.env.PORT || 4000),
