@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color: #181916; background: #f4f1e9; font-family: Inter, sans-serif; font-synthesis: none; }
+html { scroll-behavior: smooth; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input, textarea { font: inherit; }
+::selection { background: #b65d43; color: white; }
+.font-display { font-family: 'Playfair Display', Georgia, serif; }
+.article-body p { margin: 0 0 1.4em; }
+.article-body h2 { margin: 2em 0 .6em; font-family: 'Playfair Display', Georgia, serif; font-size: 1.7rem; }
+.editor-input { @apply w-full rounded-sm border border-ink/15 bg-white px-3 py-2.5 outline-none transition focus:border-clay focus:ring-2 focus:ring-clay/10; }
