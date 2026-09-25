@@ -12,8 +12,46 @@ function usePublicData() {
   const [settings, setSettings] = useState<SiteSettings>(emptySettings)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  useEffect(() => { Promise.all([api.getArticles(), api.getSettings()]).then(([a, s]) => { setArticles(a); setSettings(s) }).catch((e: Error) => setError(e.message)).finally(() => setLoading(false)) }, [])
+
+  useEffect(() => {
+    try {
+      setArticles(getArticlesFromFakeData())
+      setSettings(getSettingsFromFakeData())
+    } catch (e: Error) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+      // useEffect(() => { 
+      //     Promise.all([api.getArticles() , api.getSettings()]).then(([a, s]) => { setArticles(a); setSettings(s) }).catch((e: Error) => setError(e.message)).finally(() => setLoading(false))
+      // }, [])
+      // return { articles, settings, loading, error }
   return { articles, settings, loading, error }
+}
+
+function getArticlesFromFakeData(): Article[] {
+  return [
+    { _id: '1',
+       slug: 'primer-articulo',
+        title: 'Dogs are going to Heaven ?',
+         excerpt: 'Ever wondered if dogs have a place in the afterlife?',
+          content: 'Contenido del primer artículo.',
+           author: 'Autor 1',
+            category: 'Policiales',
+            imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv5qyZzmMnousdVQQKyroSh3fBLZon-pl7d9dfIyDcORBWRkN8dMQ2ZsA&s=10',
+             imageAlt: 'Imagen del primer artículo',
+              published: true,
+               position: 1,
+                publishedAt: new Date().toDateString() },
+    { _id: '2', slug: 'segundo-articulo', title: 'Segundo Artículo', excerpt: 'Este es el segundo artículo.', content: 'Contenido del segundo artículo.', author: 'Autor 2', category: 'Policiales', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv5qyZzmMnousdVQQKyroSh3fBLZon-pl7d9dfIyDcORBWRkN8dMQ2ZsA&s=10', imageAlt: 'Imagen del segundo artículo', published: true, position: 2, publishedAt: new Date().toDateString() },
+    { _id: '3', slug: 'tercer-articulo', title: 'Tercer Artículo', excerpt: 'Este es el tercer artículo.', content: 'Contenido del tercer artículo.', author: 'Autor 3', category: 'Tech', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv5qyZzmMnousdVQQKyroSh3fBLZon-pl7d9dfIyDcORBWRkN8dMQ2ZsA&s=10', imageAlt: 'Imagen del tercer artículo', published: true, position: 3, publishedAt: new Date().toDateString() },
+    { _id: '4', slug: 'cuarto-articulo', title: 'Cuarto Artículo', excerpt: 'Este es el cuarto artículo.', content: 'Contenido del cuarto artículo.', author: 'Autor 4', category: 'Economy', imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv5qyZzmMnousdVQQKyroSh3fBLZon-pl7d9dfIyDcORBWRkN8dMQ2ZsA&s=10', imageAlt: 'Imagen del cuarto artículo', published: true, position: 4, publishedAt: new Date().toDateString() }
+  ]
+}
+
+function getSettingsFromFakeData(): SiteSettings {
+  return { siteName: 'Bellas', eyebrow: 'Eyebrow', heroTitle: 'Hero Title', heroText: 'Hero Text', bannerText: 'Banner Text', aboutText: 'About Text' }
 }
 
 function Header({ settings, admin = false, onLogout }: { settings: SiteSettings; admin?: boolean; onLogout?: () => void }) {
