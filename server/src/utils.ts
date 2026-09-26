@@ -8,3 +8,9 @@ export function imageUrl(id: unknown): string {
   // estable conserva el caché eficiente después de la primera carga correcta.
   return `/api/images/${String(id)}?v=1`
 }
+
+export const imageUrlPattern = /^\/api\/images\/[a-f\d]{24}(?:\?v=\d+)?$/i
+
+export function imageIdFromUrl(value: string): string {
+  return new URL(value, 'http://localhost').pathname.split('/').at(-1)!
+}
