@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
+import bcrypt from 'bcryptjs'
 import { config } from './config.js'
-import { Article, Image, SiteSettings } from './models.js'
+import { AdminUser, Article, Image, SiteSettings } from './models.js'
 import { createSlug } from './utils.js'
 
 const stories = [
@@ -14,6 +15,8 @@ function svg(title: string, colors: string[]) { return Buffer.from(`<svg xmlns="
 
 async function seed() {
   await mongoose.connect(config.mongoUri)
+  await AdminUser.deleteMany({})
+  await AdminUser.create({ username: 'admin', passwordHash: await bcrypt.hash(config.adminPassword, 12) })
   await SiteSettings.findOneAndUpdate({ key: 'main' }, { key: 'main', siteName: 'Bellas', eyebrow: 'Historias que merecen tiempo', heroTitle: 'Periodismo para mirar más de cerca.', heroText: 'Crónicas, conversaciones y análisis independientes sobre las personas y los lugares que transforman nuestro presente.', bannerText: 'Nueva edición · Historias locales, preguntas universales', aboutText: 'Bellas es un medio independiente que apuesta por la pausa, la curiosidad y el contexto. Publicamos historias hechas con tiempo y cerca de sus protagonistas.' }, { upsert: true, new: true })
   if (await Article.countDocuments()) { console.log('La base ya contiene artículos; no se modificaron.'); await mongoose.disconnect(); return }
   for (const [position, story] of stories.entries()) { const image = await Image.create({ data: svg(story.title, story.colors), contentType: 'image/svg+xml', filename: `${createSlug(story.title)}.svg` }); await Article.create({ title: story.title, slug: createSlug(story.title), excerpt: story.excerpt, content: story.content, author: 'Sebastián Bellas', category: story.category, imageId: image._id, imageAlt: `Ilustración para ${story.title}`, position, published: true, publishedAt: new Date(Date.now() - position * 86400000 * 4) }) }

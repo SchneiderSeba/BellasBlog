@@ -1,17 +1,19 @@
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import express, { type NextFunction, type Request, type Response } from 'express'
+import { resolve } from 'node:path'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import mongoose from 'mongoose'
 import multer from 'multer'
 import { z } from 'zod'
-import { clearSession, createToken, isAuthenticated, requireAdmin, setSession, validCredentials } from './auth.js'
+import { clearSession, createToken, isAuthenticated, requireAdmin, sessionUsername, setSession, validCredentials } from './auth.js'
 import { config } from './config.js'
 import { Article, Image, SiteSettings } from './models.js'
 import { createSlug, imageUrl } from './utils.js'
 
 const app = express()
+const clientDist = resolve(process.cwd(), '../client/dist')
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(cors({ origin: config.clientUrl, credentials: true }))
 app.use(express.json({ limit: '1mb' }))
@@ -23,9 +25,9 @@ const settingsSchema = z.object({ siteName: z.string().trim().min(1).max(60), ey
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: true, legacyHeaders: false, message: { message: 'Demasiados intentos. Prueba nuevamente más tarde.' } })
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
-app.post('/api/auth/login', loginLimiter, (req, res) => { const parsed = z.object({ username: z.string(), password: z.string() }).safeParse(req.body); if (!parsed.success || !validCredentials(parsed.data.username, parsed.data.password)) { res.status(401).json({ message: 'Usuario o contraseña incorrectos.' }); return } setSession(res, createToken()); res.json({ username: config.adminUsername }) })
+app.post('/api/auth/login', loginLimiter, asyncRoute(async (req, res) => { const parsed = z.object({ username: z.string().trim().min(1).max(60), password: z.string().min(1).max(200) }).safeParse(req.body); if (!parsed.success || !await validCredentials(parsed.data.username, parsed.data.password)) { res.status(401).json({ message: 'Usuario o contraseña incorrectos.' }); return } const username = parsed.data.username.trim().toLowerCase(); setSession(res, createToken(username)); res.json({ username }) }))
 app.post('/api/auth/logout', (_req, res) => { clearSession(res); res.status(204).end() })
-app.get('/api/auth/session', (req, res) => res.json({ authenticated: isAuthenticated(req), ...(isAuthenticated(req) ? { username: config.adminUsername } : {}) }))
+app.get('/api/auth/session', (req, res) => { const username = sessionUsername(req); res.json({ authenticated: Boolean(username), ...(username ? { username } : {}) }) })
 
 app.get('/api/settings', asyncRoute(async (_req, res) => { const settings = await SiteSettings.findOne({ key: 'main' }).lean(); if (!settings) { res.status(404).json({ message: 'Configuración no encontrada. Ejecuta npm run seed.' }); return } res.json(settings) }))
 app.put('/api/settings', requireAdmin, asyncRoute(async (req, res) => { const data = settingsSchema.parse(req.body); const settings = await SiteSettings.findOneAndUpdate({ key: 'main' }, { ...data, key: 'main' }, { upsert: true, new: true, runValidators: true }); res.json(settings) }))
@@ -39,9 +41,11 @@ app.delete('/api/articles/:id', requireAdmin, asyncRoute(async (req, res) => { i
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (_req, file, cb) => cb(null, ['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.mimetype)) })
 app.post('/api/images', requireAdmin, upload.single('image'), asyncRoute(async (req, res) => { if (!req.file) { res.status(400).json({ message: 'Selecciona una imagen JPG, PNG, WEBP o GIF de hasta 5 MB.' }); return } const image = await Image.create({ data: req.file.buffer, contentType: req.file.mimetype, filename: req.file.originalname }); res.status(201).json({ imageUrl: imageUrl(image._id) }) }))
-app.get('/api/images/:id', asyncRoute(async (req, res) => { if (!mongoose.isValidObjectId(req.params.id)) { res.status(404).end(); return } const image = await Image.findById(req.params.id).lean(); if (!image) { res.status(404).end(); return } res.set({ 'Content-Type': image.contentType, 'Cache-Control': 'public, max-age=31536000, immutable' }); res.send(image.data) }))
+app.get('/api/images/:id', asyncRoute(async (req, res) => { if (!mongoose.isValidObjectId(req.params.id)) { res.status(404).end(); return } const image = await Image.findById(req.params.id); if (!image) { res.status(404).end(); return } res.set({ 'Content-Type': image.contentType, 'Cache-Control': 'public, max-age=31536000, immutable' }); res.end(Buffer.from(image.data)) }))
 
-app.use((_req, res) => res.status(404).json({ message: 'Ruta no encontrada.' }))
+app.use('/api', (_req, res) => res.status(404).json({ message: 'Ruta no encontrada.' }))
+app.use(express.static(clientDist, { index: false, maxAge: config.production ? '1h' : 0 }))
+app.get('/{*splat}', (_req, res) => res.sendFile('index.html', { root: clientDist }))
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => { if (error instanceof z.ZodError) { res.status(400).json({ message: error.issues[0]?.message || 'Datos no válidos.' }); return } if (error instanceof multer.MulterError) { res.status(400).json({ message: error.code === 'LIMIT_FILE_SIZE' ? 'La imagen supera los 5 MB.' : error.message }); return } console.error(error); res.status(500).json({ message: 'No pudimos completar la solicitud.' }) })
 
 export default app

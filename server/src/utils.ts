@@ -3,5 +3,8 @@ export function createSlug(value: string): string {
 }
 
 export function imageUrl(id: unknown): string {
-  return `/api/images/${String(id)}`
+  // La versión invalida respuestas antiguas de la misma imagen en el navegador.
+  // Las imágenes nuevas siempre reciben otro ObjectId, por lo que esta versión
+  // estable conserva el caché eficiente después de la primera carga correcta.
+  return `/api/images/${String(id)}?v=1`
 }

@@ -6,4 +6,4 @@ describe('createSlug', () => {
   it('no deja guiones en los extremos', () => expect(createSlug('---Hola---')).toBe('hola'))
 })
 
-describe('imageUrl', () => { it('crea una ruta de API', () => expect(imageUrl('abc')).toBe('/api/images/abc')) })
+describe('imageUrl', () => { it('crea una ruta de API versionada', () => expect(imageUrl('abc')).toBe('/api/images/abc?v=1')) })

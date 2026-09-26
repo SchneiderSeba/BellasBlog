@@ -26,6 +26,12 @@ const settingsSchema = new Schema({
 
 const imageSchema = new Schema({ data: { type: Buffer, required: true }, contentType: { type: String, required: true }, filename: { type: String, required: true } }, { timestamps: true })
 
+const adminUserSchema = new Schema({
+  username: { type: String, required: true, unique: true, trim: true, lowercase: true },
+  passwordHash: { type: String, required: true },
+}, { timestamps: true })
+
 export const Article = model('Article', articleSchema)
 export const SiteSettings = model('SiteSettings', settingsSchema)
 export const Image = model('Image', imageSchema)
+export const AdminUser = model('AdminUser', adminUserSchema)

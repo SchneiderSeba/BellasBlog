@@ -28,27 +28,27 @@ function usePublicData() {
 function Header({ settings, admin = false, onLogout }: { settings: SiteSettings; admin?: boolean; onLogout?: () => void }) {
   const [open, setOpen] = useState(false)
   return <header className="border-b border-ink/15 bg-paper/95 sticky top-0 z-40 backdrop-blur">
-    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 lg:px-10">
-      <Link to={admin ? '/admin' : '/'} className="font-display text-3xl font-semibold tracking-tight">{settings.siteName}</Link>
+    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-10">
+      <Link to={admin ? '/admin' : '/'} className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{settings.siteName}</Link>
       <nav className="hidden items-center gap-8 text-sm md:flex">
         <Link className="hover:text-clay" to="/">Portada</Link><a className="hover:text-clay" href="/#articulos">Artículos</a><a className="hover:text-clay" href="/#acerca">Acerca</a>
         {admin && <button onClick={onLogout} className="flex items-center gap-2 border-l border-ink/20 pl-8 hover:text-clay"><LogOut size={15}/> Salir</button>}
       </nav>
       <button aria-label="Abrir menú" className="md:hidden" onClick={() => setOpen(!open)}>{open ? <X/> : <Menu/>}</button>
     </div>
-    {open && <nav className="space-y-4 border-t border-ink/10 px-5 py-5 text-sm md:hidden"><Link className="block" to="/">Portada</Link><a className="block" href="/#articulos">Artículos</a><a className="block" href="/#acerca">Acerca</a>{admin && <button onClick={onLogout}>Cerrar sesión</button>}</nav>}
+    {open && <nav className="space-y-4 border-t border-ink/10 bg-paper px-4 py-5 text-sm shadow-lg md:hidden"><Link className="block" to="/">Portada</Link><a className="block" href="/#articulos">Artículos</a><a className="block" href="/#acerca">Acerca</a>{admin && <button onClick={onLogout}>Cerrar sesión</button>}</nav>}
   </header>
 }
 
 function ArticleCard({ article, index }: { article: Article; index: number }) {
-  return <article className={`group ${index === 0 ? 'md:col-span-2' : ''}`}>
-    <Link to={`/articulos/${article.slug}`} className={`block overflow-hidden bg-ink/5 ${index === 0 ? 'aspect-[16/8]' : 'aspect-[4/3]'}`}>
+  return <article className={`group rounded-xl bg-white p-3 shadow-[0_2px_0_rgba(24,25,22,.05)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(24,25,22,.12)] sm:p-4 ${index === 0 ? 'md:col-span-2' : ''}`}>
+    <Link to={`/articulos/${article.slug}`} className={`block overflow-hidden rounded-lg bg-ink/5 ${index === 0 ? 'aspect-[16/10] md:aspect-[16/8]' : 'aspect-[4/3]'}`}>
       <img src={article.imageUrl} alt={article.imageAlt} className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.025]"/>
     </Link>
-    <div className="pt-5">
+    <div className="px-1 pb-1 pt-5">
       <div className="mb-3 flex items-center gap-3 text-xs font-medium uppercase tracking-[.16em] text-clay"><span>{article.category}</span><span className="h-px w-6 bg-clay/50"/><time>{new Date(article.publishedAt).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' })}</time></div>
-      <h2 className={`font-display font-semibold leading-tight ${index === 0 ? 'text-3xl lg:text-4xl' : 'text-2xl'}`}>{article.title}</h2>
-      <p className="mt-3 max-w-2xl leading-7 text-ink/65">{article.excerpt}</p>
+      <h2 className={`font-display font-semibold leading-tight ${index === 0 ? 'text-2xl sm:text-3xl lg:text-4xl' : 'text-xl sm:text-2xl'}`}>{article.title}</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-ink/65 sm:text-base sm:leading-7">{article.excerpt}</p>
       <Link to={`/articulos/${article.slug}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-wider transition hover:gap-3 hover:text-clay">Leer artículo <ArrowRight size={15}/></Link>
     </div>
   </article>
@@ -57,23 +57,23 @@ function ArticleCard({ article, index }: { article: Article; index: number }) {
 function Home() {
   const { articles, settings, loading, error } = usePublicData()
   return <><Header settings={settings}/><main>
-    <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:py-24">
-      <div><p className="mb-5 text-xs font-semibold uppercase tracking-[.25em] text-clay">{settings.eyebrow}</p><h1 className="max-w-4xl font-display text-5xl font-semibold leading-[1.04] tracking-tight sm:text-6xl lg:text-7xl">{settings.heroTitle}</h1></div>
-      <div className="flex items-end"><p className="max-w-lg border-l border-ink/30 pl-6 text-lg leading-8 text-ink/65">{settings.heroText}</p></div>
+    <section className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:py-24">
+      <div><p className="mb-4 text-[.65rem] font-semibold uppercase tracking-[.25em] text-clay sm:text-xs">{settings.eyebrow}</p><h1 className="max-w-4xl font-display text-4xl font-semibold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">{settings.heroTitle}</h1></div>
+      <div className="flex items-end"><p className="max-w-lg border-l border-ink/30 pl-4 text-base leading-7 text-ink/65 sm:pl-6 sm:text-lg sm:leading-8">{settings.heroText}</p></div>
     </section>
-    {settings.bannerText && <div className="border-y border-ink/15 bg-moss px-5 py-3 text-center text-sm text-white"><span className="font-medium">{settings.bannerText}</span></div>}
-    <section id="articulos" className="mx-auto max-w-7xl px-5 py-16 lg:px-10 lg:py-24">
-      <div className="mb-12 flex items-end justify-between border-b border-ink/20 pb-5"><div><p className="text-xs font-semibold uppercase tracking-[.2em] text-clay">Archivo</p><h2 className="mt-2 font-display text-4xl">Últimas historias</h2></div><span className="hidden text-sm text-ink/50 sm:block">{articles.length} publicaciones</span></div>
+    {settings.bannerText && <div className="border-y border-ink/15 bg-moss px-4 py-3 text-center text-xs text-white sm:text-sm"><span className="font-medium">{settings.bannerText}</span></div>}
+    <section id="articulos" className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-10 lg:py-24">
+      <div className="mb-8 flex items-end justify-between border-b border-ink/20 pb-5 sm:mb-12"><div><p className="text-[.65rem] font-semibold uppercase tracking-[.2em] text-clay sm:text-xs">Archivo</p><h2 className="mt-2 font-display text-3xl sm:text-4xl">Últimas historias</h2></div><span className="hidden text-sm text-ink/50 sm:block">{articles.length} publicaciones</span></div>
       {loading && <p className="py-16 text-center text-ink/60">Cargando historias…</p>}
       {error && <p className="py-16 text-center text-clay">{error}</p>}
       {!loading && !error && articles.length === 0 && <p className="py-16 text-center text-ink/60">Todavía no hay artículos publicados.</p>}
-      <div className="grid gap-x-8 gap-y-16 md:grid-cols-2 lg:grid-cols-3">{articles.map((a, i) => <ArticleCard key={a._id} article={a} index={i}/>)}</div>
+      <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">{articles.map((a, i) => <ArticleCard key={a._id} article={a} index={i}/>)}</div>
     </section>
-    <section id="acerca" className="bg-ink text-paper"><div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 lg:grid-cols-3 lg:px-10 lg:py-24"><p className="text-xs font-semibold uppercase tracking-[.2em] text-clay">Acerca de este medio</p><p className="font-display text-3xl leading-snug lg:col-span-2">{settings.aboutText}</p></div></section>
+    <section id="acerca" className="mt-4 bg-ink text-paper sm:mt-8"><div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-3 lg:px-10 lg:py-24"><p className="text-[.65rem] font-semibold uppercase tracking-[.2em] text-clay sm:text-xs">Acerca de este medio</p><p className="font-display text-2xl leading-snug sm:text-3xl lg:col-span-2">{settings.aboutText}</p></div></section>
   </main><Footer settings={settings}/></>
 }
 
-function Footer({ settings }: { settings: SiteSettings }) { return <footer className="border-t border-paper/10 bg-ink text-paper"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 px-5 py-8 text-sm text-paper/55 sm:flex-row lg:px-10"><span>© {new Date().getFullYear()} {settings.siteName}</span><span>Periodismo independiente</span></div></footer> }
+function Footer({ settings }: { settings: SiteSettings }) { return <footer className="border-t border-paper/10 bg-ink text-paper"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 px-4 py-8 text-sm text-paper/55 sm:flex-row sm:px-6 lg:px-10"><span>© {new Date().getFullYear()} {settings.siteName}</span><span>Periodismo independiente</span></div></footer> }
 
 function ArticlePage() {
   const { slug = '' } = useParams(); const [article, setArticle] = useState<Article>(); const [settings, setSettings] = useState(emptySettings); const [error, setError] = useState('')
